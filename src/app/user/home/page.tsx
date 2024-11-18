@@ -65,7 +65,7 @@ export default function Home() {
   );
 
   useEffect(() => {
-    if (signallingMessage) {
+    if (signallingMessage && signallingMessage.type == 'offer') {
       console.log(
         'Message from backend on signal component in home : ',
         signallingMessage
@@ -85,7 +85,7 @@ export default function Home() {
     return () => {};
   }, [signallingMessage]);
 
-  const sendSignallingMessage = async (user: User) => {
+  const callUser = async (user: User) => {
     /**
      * Create an offer
      */
@@ -95,10 +95,21 @@ export default function Home() {
      * one way is whenever a user comes online give hom a random id (Think  . .. . .. )
      */
     // redirect(`/call?to=${user.id}`)
-    router.push(`/call?to=${user.id}`);
+    router.push(`/call?to=${user.id}&mode=offer`);
   };
 
-  const onCallAccept = () => {};
+  const onCallAccept = () => {
+    stop();
+    localStorage.setItem(
+      'signal',
+      JSON.stringify({
+        ...offer.offer,
+        fromUser: offer.fromUser,
+      })
+    );
+
+    router.push(`/call?mode=answer&from=${offer.fromUser.id}`);
+  };
 
   const onCallReject = () => {
     stop();
@@ -142,7 +153,7 @@ export default function Home() {
             <p>{user.name}</p>
             <Button
               onClick={() => {
-                sendSignallingMessage(user);
+                callUser(user);
               }}
             >
               Call
