@@ -37,8 +37,6 @@ const useRTCSocket = () => {
     if (typeof window == 'undefined') return;
     if (status == 'loading' || status == 'unauthenticated') return;
 
-    console.log('authorization', `Bearer ${(session as any).accessToken}`);
-
     rtcSocket = io(`${API_SERVER_BASE_URL}/rtc`, {
       transports: ['polling', 'websocket'],
       withCredentials: true,

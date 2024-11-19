@@ -4,8 +4,10 @@ import { cn } from '@/lib/utils'; // Utility function for conditional class name
 
 const VideoCallButtons = (props: {
   onMute: () => void;
+  onVideo: () => void;
   onDisconnect: () => void;
   isMuted: boolean;
+  isVideoEnabled: boolean;
 }) => {
   return (
     <div className="flex space-x-4">
@@ -23,6 +25,24 @@ const VideoCallButtons = (props: {
         ) : (
           <span role="img" aria-label="Mute">
             🔇
+          </span>
+        )}
+        {/* <span className="ml-2">{props.isMuted ? "Unmute" : "Mute"}</span> */}
+      </Button>
+      <Button
+        onClick={props.onVideo}
+        className={cn(
+          'flex items-center justify-center px-4 py-4 rounded-full h-16 w-16',
+          props.isMuted ? 'bg-red-300 text-white' : 'bg-gray-200 text-black'
+        )}
+      >
+        {props.isVideoEnabled ? (
+          <span role="img" aria-label="Unmute">
+            📹
+          </span>
+        ) : (
+          <span role="img" aria-label="Mute">
+            📹
           </span>
         )}
         {/* <span className="ml-2">{props.isMuted ? "Unmute" : "Mute"}</span> */}

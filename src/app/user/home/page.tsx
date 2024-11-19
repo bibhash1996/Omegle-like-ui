@@ -124,7 +124,7 @@ export default function Home() {
     fetch('/api/location', {
       method: 'GET',
     }).then(async (res) => {
-      console.log('Response for location');
+      // console.log('Response for location');
       const users = await res.json();
       setUsers(users.users);
     });

@@ -26,8 +26,10 @@ export default function Home() {
   const hostRef = useRef(false);
   const [offer, setOffer] = useState('');
   const [ringing, setRinging] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [mode, setMode] = useState<'OFFER' | 'ANSWER'>('OFFER');
+
   const servers = {
     iceServers: [
       {
@@ -43,7 +45,7 @@ export default function Home() {
     peerconnection = new RTCPeerConnection();
     hostRef.current = true;
     navigator.mediaDevices
-      .getUserMedia({ audio: false, video: true })
+      .getUserMedia({ audio: true, video: true })
       .then((localStream) => {
         (user1Ref.current as any).srcObject = localStream;
         (user2Ref.current as any).srcObject = new MediaStream();
@@ -65,10 +67,16 @@ export default function Home() {
   const initiateCall = (to: string) => {
     if (hostRef.current && (user1Ref?.current as any)?.srcObject) {
       (rtcConnectionRef.current as any) = createPeerConnection();
-      (rtcConnectionRef.current as any).addTrack(
-        (user1Ref.current as any).srcObject.getTracks()[0],
-        (user1Ref.current as any).srcObject
-      );
+      // (rtcConnectionRef.current as any).addTrack(
+      //   (user1Ref.current as any).srcObject.getTracks()[0],
+      //   (user1Ref.current as any).srcObject
+      // );
+      (user1Ref.current as any).srcObject.getTracks().forEach((track: any) => {
+        (rtcConnectionRef.current as any).addTrack(
+          track,
+          (user1Ref.current as any).srcObject
+        );
+      });
 
       (rtcConnectionRef.current as any).onicecandidate = async (event: any) => {
         //Event that fires off when a new offer ICE candidate is created
@@ -116,6 +124,16 @@ export default function Home() {
         });
     }
   };
+
+  /**
+   * Custom hook is used to handle  multiple mount and remount
+   * components in react/next in development mode,
+   * This behaioir affected webRTC connection
+   */
+  // useEffect(() => {
+  //   if (!hasMounted) return;
+  //   return () => {};
+  // }, [hasMounted]);
 
   useEffect(() => {
     let updatedMode: 'OFFER' | 'ANSWER' =
@@ -183,10 +201,17 @@ export default function Home() {
   const handleReceivedOffer = async (offer: any) => {
     if (hostRef.current) {
       (rtcConnectionRef as any).current = createPeerConnection();
-      (rtcConnectionRef.current as any).addTrack(
-        (user1Ref as any).current.srcObject.getTracks()[0],
-        (user1Ref as any).current.srcObject
-      );
+      // (rtcConnectionRef.current as any).addTrack(
+      //   (user1Ref as any).current.srcObject.getTracks()[0],
+      //   (user1Ref as any).current.srcObject
+      // );
+      (user1Ref.current as any).srcObject.getTracks().forEach((track: any) => {
+        (rtcConnectionRef.current as any).addTrack(
+          track,
+          (user1Ref.current as any).srcObject
+        );
+      });
+
       // (rtcConnectionRef.current as any).addTrack(
       //   (user1Ref as any).current.srcObject.getTracks()[1],
       //   (user1Ref as any).current.srcObject
@@ -243,8 +268,26 @@ export default function Home() {
     }
   };
 
-  const handleMute = () => {
-    setIsMuted((prev) => !prev);
+  const toggleAudio = () => {
+    let localStream = (user1Ref.current as any).srcObject;
+    if (localStream) {
+      const audioTracks = localStream.getAudioTracks();
+      audioTracks.forEach((track: any) => {
+        track.enabled = !track.enabled; // Toggle the enabled property
+      });
+      setIsAudioEnabled(audioTracks[0].enabled);
+    }
+  };
+
+  const toggleVideo = () => {
+    let localStream = (user1Ref.current as any).srcObject;
+    if (localStream) {
+      const videoTracks = localStream.getVideoTracks();
+      videoTracks.forEach((track: any) => {
+        track.enabled = !track.enabled; // Toggle the enabled property
+      });
+      setIsVideoEnabled(videoTracks[0].enabled);
+    }
   };
 
   const handleDisconnect = () => {
@@ -288,9 +331,11 @@ export default function Home() {
       {/* buttons */}
       <div className="absolute bottom-10 h-10 w-full rounded-lg flex justify-center">
         <VideoCallButtons
-          onMute={handleMute}
+          onMute={toggleAudio}
           onDisconnect={handleDisconnect}
-          isMuted={isMuted}
+          isMuted={isAudioEnabled}
+          isVideoEnabled={isVideoEnabled}
+          onVideo={toggleVideo}
         />
       </div>
     </div>
