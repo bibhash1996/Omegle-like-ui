@@ -3,9 +3,15 @@
 import Loading from '@/components/loading';
 import VideoCallButtons from '@/components/videoCallButtons';
 import useRTCSocket from '@/hooks/useRTCSocket';
-import { useEffect, useRef, useState } from 'react';
+import { Ref, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  FaMicrophoneAltSlash,
+  FaVideoSlash,
+  FaPhone,
+  FaPhoneSlash,
+} from 'react-icons/fa';
 
 let peerconnection: RTCPeerConnection;
 
@@ -23,12 +29,20 @@ export default function Home() {
   const user1Ref = useRef(null);
   const user2Ref = useRef(null);
   const rtcConnectionRef = useRef(null);
+  const dataChannelRef = useRef(null);
   const hostRef = useRef(false);
   const [offer, setOffer] = useState('');
   const [ringing, setRinging] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [mode, setMode] = useState<'OFFER' | 'ANSWER'>('OFFER');
+
+  const [peerDisconnected, setPeerDisconnected] = useState(false);
+
+  const [peerSettings, setPeerSettings] = useState<{
+    audio: boolean;
+    video: boolean;
+  }>({ audio: true, video: true });
 
   const servers = {
     iceServers: [
@@ -64,6 +78,58 @@ export default function Home() {
     return connection;
   };
 
+  /**
+   * Data channel setup
+   */
+  const setupDataChannel = (dataChannel: RTCDataChannel) => {
+    dataChannel.onopen = () => {
+      console.log('Data channel is open');
+    };
+
+    dataChannel.onmessage = (event) => {
+      console.log('DATA CHANNEL DATA : ', JSON.stringify(event.data));
+      let data = JSON.parse(event.data);
+      if (data && data.type) {
+        let type = data.type;
+
+        switch (type) {
+          case 'INFO':
+            setPeerSettings({
+              audio: data.data.audio,
+              video: data.data.video,
+            });
+            break;
+          case 'DISCONNECT':
+            console.log('PEER DISCONNECTED');
+            setPeerDisconnected(true);
+            // router.push('/user/home');
+            break;
+        }
+      }
+    };
+
+    dataChannel.onclose = () => {
+      console.log('Data channel is closed');
+    };
+  };
+
+  const createDataChannel = () => {
+    dataChannelRef.current = (
+      rtcConnectionRef as any
+    ).current.createDataChannel('chat');
+    setupDataChannel((dataChannelRef as any).current as RTCDataChannel);
+  };
+
+  const sendMessageDataChannelMessage = (message: any) => {
+    if (dataChannelRef.current && message) {
+      (dataChannelRef as any).current.send(JSON.stringify(message));
+      console.log('Sent Message');
+    }
+  };
+  /**
+   *
+   */
+
   const initiateCall = (to: string) => {
     if (hostRef.current && (user1Ref?.current as any)?.srcObject) {
       (rtcConnectionRef.current as any) = createPeerConnection();
@@ -78,10 +144,18 @@ export default function Home() {
         );
       });
 
+      /**
+       * Data channel
+       */
+      createDataChannel();
+      /**
+       *
+       */
+
       (rtcConnectionRef.current as any).onicecandidate = async (event: any) => {
         //Event that fires off when a new offer ICE candidate is created
         if (event.candidate) {
-          console.log('ice candaite : ', event.candidate);
+          // console.log('ice candaite : ', event.candidate);
           // setOffer(
           //   JSON.stringify((rtcConnectionRef.current as any).localDescription)
           // );
@@ -151,24 +225,28 @@ export default function Home() {
       // use this offer and create answer
       let offerStringified = localStorage.getItem('signal');
       if (!offerStringified) {
-        console.log('OFFER NOT FOUND');
+        // console.log('OFFER NOT FOUND');
         router.push('/user/home');
         return;
       }
       let offer = JSON.parse(offerStringified);
-      console.log('OFFER : ', offer);
+      // console.log('OFFER : ', offer);
       setTimeout(() => {
         handleReceivedOffer(offer);
       }, 2000);
       // I have the offer now
     }
+
+    return () => {
+      // close the connections
+      (rtcConnectionRef as any).current.close();
+    };
   }, [searchParams.get('mode'), searchParams.get('to')]);
 
   useEffect(() => {
     /**
      * Handle receive answers only
      */
-    console.log('Signalling message preferrably answer: ', signallingMessage);
     if (signallingMessage && signallingMessage.type == 'answer') {
       setRinging(false);
       (rtcConnectionRef as any).current
@@ -184,46 +262,45 @@ export default function Home() {
 
   const handleICECandidateEvent = (e: any) => {
     if (e.candidate) {
-      console.log('ICE candidate : ', e.candidate);
+      // console.log('ICE candidate : ', e.candidate);
     }
   };
 
   const handleTrackEvent = (event: RTCTrackEvent) => {
-    console.log('event track : ', event);
+    // console.log('event track : ', event);
     event.streams[0].getTracks().forEach((track) => {
-      console.log('TRACK : ', track);
-      console.log(user2Ref.current as any);
+      // console.log('TRACK : ', track);
+      // console.log(user2Ref.current as any);
       (user2Ref.current as any).srcObject.addTrack(track);
     });
-    // (user2Ref.current as any).srcObject = event.streams[0];
   };
 
   const handleReceivedOffer = async (offer: any) => {
     if (hostRef.current) {
       (rtcConnectionRef as any).current = createPeerConnection();
-      // (rtcConnectionRef.current as any).addTrack(
-      //   (user1Ref as any).current.srcObject.getTracks()[0],
-      //   (user1Ref as any).current.srcObject
-      // );
       (user1Ref.current as any).srcObject.getTracks().forEach((track: any) => {
         (rtcConnectionRef.current as any).addTrack(
           track,
           (user1Ref.current as any).srcObject
         );
       });
-
-      // (rtcConnectionRef.current as any).addTrack(
-      //   (user1Ref as any).current.srcObject.getTracks()[1],
-      //   (user1Ref as any).current.srcObject
-      // );
-      // rtcConnectionRef.current.addTrack(
-      //     user1Ref.current.getTracks()[1],
-      //     user1Ref.current,
-      // );
+      /**
+       * Data channel
+       */
+      // createDataChannel();
+      (rtcConnectionRef as any).current.ondatachannel = (event: any) => {
+        console.log('Data channnel received');
+        const receivedChannel = event.channel;
+        dataChannelRef.current = receivedChannel;
+        setupDataChannel(receivedChannel);
+      };
+      /**
+       *
+       */
       (rtcConnectionRef.current as any).onicecandidate = async (event: any) => {
         //Event that fires off when a new offer ICE candidate is created
         if (event.candidate) {
-          console.log('ice candidate : ', event.candidate);
+          // console.log('ice candidate : ', event.candidate);
           // setOffer(
           //   JSON.stringify((rtcConnectionRef.current as any).localDescription)
           // );
@@ -276,6 +353,13 @@ export default function Home() {
         track.enabled = !track.enabled; // Toggle the enabled property
       });
       setIsAudioEnabled(audioTracks[0].enabled);
+      sendMessageDataChannelMessage({
+        type: 'INFO',
+        data: {
+          audio: audioTracks[0].enabled,
+          video: isVideoEnabled,
+        },
+      });
     }
   };
 
@@ -287,12 +371,21 @@ export default function Home() {
         track.enabled = !track.enabled; // Toggle the enabled property
       });
       setIsVideoEnabled(videoTracks[0].enabled);
+      sendMessageDataChannelMessage({
+        type: 'INFO',
+        data: {
+          video: videoTracks[0].enabled,
+          audio: isAudioEnabled,
+        },
+      });
     }
   };
 
   const handleDisconnect = () => {
     // Logic to disconnect from the video call
+    sendMessageDataChannelMessage({ type: 'DISCONNECT' });
     console.log('Disconnected from the call');
+    router.push('/user/home');
   };
 
   if (status === 'loading') {
@@ -300,15 +393,23 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-900">
+    <div className="flex flex-col h-full bg-gray-700 relative">
       {ringing ? (
-        <div className="flex justify-center items-center h-full w-full absolute left-0 top-0">
-          <Avatar className="h-40 w-40">
-            <AvatarImage src="https://github.com/hadcn.png" />
-            <AvatarFallback className="text-3xl bg-gray-300">CN</AvatarFallback>
-          </Avatar>
+        <div className="flex text-black justify-center items-center h-full w-full absolute left-0 top-0">
+          <div className="flex items-center justify-center px-4 py-4 rounded-full h-16 w-16 bg-gray-200 text-black">
+            <FaPhone />
+          </div>
         </div>
       ) : null}
+
+      {peerDisconnected ? (
+        <div className="flex text-black justify-center items-center h-full w-full absolute left-0 top-0 bg-gray-700">
+          <div className="flex items-center justify-center px-4 py-4 rounded-full h-16 w-16 bg-gray-200 text-black">
+            <FaPhoneSlash />
+          </div>
+        </div>
+      ) : null}
+
       <video
         id="user-2"
         ref={user2Ref}
@@ -316,9 +417,21 @@ export default function Home() {
         autoPlay
         className="h-full object-cover"
       ></video>
+      {peerSettings && peerSettings.video == false && (
+        <div className="flex text-black justify-center items-center h-full w-full absolute left-0 top-0 bg-gray-700">
+          <div className="flex items-center justify-center px-4 py-4 rounded-full h-16 w-16 bg-gray-200 text-black">
+            <FaVideoSlash />
+          </div>
+        </div>
+      )}
+      {peerSettings && peerSettings.audio == false && (
+        <FaMicrophoneAltSlash
+          size={70}
+          className="absolute right-8 top-40 text-white"
+        />
+      )}
 
       <div className="absolute bottom-8 right-8 h-60 w-60 rounded-lg border-white border-2">
-        {/* <video id='user-2' ref={user2Ref} playsInline autoPlay className=""></video> */}
         <video
           id="user-1"
           ref={user1Ref}
@@ -326,6 +439,22 @@ export default function Home() {
           autoPlay
           className="h-full object-cover"
         ></video>
+        {!isVideoEnabled && (
+          // <div className="flex text-black justify-center items-center h-full w-full absolute left-0 top-0">
+          //   <FaVideoSlash />
+          // </div>
+          <div className="flex text-black justify-center items-center h-full w-full absolute left-0 top-0 bg-gray-700">
+            <div className="flex items-center justify-center px-4 py-4 rounded-full h-16 w-16 bg-gray-200 text-black">
+              <FaVideoSlash />
+            </div>
+          </div>
+        )}
+        {!isAudioEnabled && (
+          <FaMicrophoneAltSlash
+            size={40}
+            className="absolute right-8 top-8 text-white"
+          />
+        )}
       </div>
 
       {/* buttons */}
@@ -333,7 +462,7 @@ export default function Home() {
         <VideoCallButtons
           onMute={toggleAudio}
           onDisconnect={handleDisconnect}
-          isMuted={isAudioEnabled}
+          isMuted={!isAudioEnabled}
           isVideoEnabled={isVideoEnabled}
           onVideo={toggleVideo}
         />

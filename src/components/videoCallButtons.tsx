@@ -1,6 +1,13 @@
 import React from 'react';
 import { Button } from '@/components/ui/button'; // Adjust the import based on your directory structure
 import { cn } from '@/lib/utils'; // Utility function for conditional class names
+import {
+  FaMicrophoneAltSlash,
+  FaMicrophone,
+  FaVideo,
+  FaVideoSlash,
+  FaMobileAlt,
+} from 'react-icons/fa';
 
 const VideoCallButtons = (props: {
   onMute: () => void;
@@ -15,46 +22,28 @@ const VideoCallButtons = (props: {
         onClick={props.onMute}
         className={cn(
           'flex items-center justify-center px-4 py-4 rounded-full h-16 w-16',
-          props.isMuted ? 'bg-red-300 text-white' : 'bg-gray-200 text-black'
+          'bg-gray-200 text-black'
         )}
       >
-        {props.isMuted ? (
-          <span role="img" aria-label="Unmute">
-            🔊
-          </span>
-        ) : (
-          <span role="img" aria-label="Mute">
-            🔇
-          </span>
-        )}
-        {/* <span className="ml-2">{props.isMuted ? "Unmute" : "Mute"}</span> */}
+        {props.isMuted ? <FaMicrophoneAltSlash /> : <FaMicrophone />}
       </Button>
       <Button
         onClick={props.onVideo}
         className={cn(
           'flex items-center justify-center px-4 py-4 rounded-full h-16 w-16',
-          props.isMuted ? 'bg-red-300 text-white' : 'bg-gray-200 text-black'
+          'bg-gray-200 text-black'
         )}
       >
-        {props.isVideoEnabled ? (
-          <span role="img" aria-label="Unmute">
-            📹
-          </span>
-        ) : (
-          <span role="img" aria-label="Mute">
-            📹
-          </span>
-        )}
-        {/* <span className="ml-2">{props.isMuted ? "Unmute" : "Mute"}</span> */}
+        {props.isVideoEnabled ? <FaVideo /> : <FaVideoSlash />}
       </Button>
       <Button
         onClick={props.onDisconnect}
-        className="flex bg-gray-200 items-center justify-center px-4 py-4 rounded-full h-16 w-16"
+        className={cn(
+          'flex items-center justify-center px-4 py-4 rounded-full h-16 w-16',
+          'bg-red-700 text-black'
+        )}
       >
-        <span role="img" aria-label="Disconnect">
-          ❌
-        </span>
-        {/* <span className="ml-2">Disconnect</span> */}
+        <FaMobileAlt />
       </Button>
     </div>
   );
