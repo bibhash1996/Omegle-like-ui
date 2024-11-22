@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import useSound from 'use-sound';
-import { getInitials } from './helper';
+import { getInitials } from '@/lib/utils';
 
 interface User {
   id: string;

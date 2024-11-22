@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { API_SERVER_BASE_URL } from '../const';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/authOptions';
-import { error } from 'console';
 
 export async function GET() {
   try {

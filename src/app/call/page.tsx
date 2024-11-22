@@ -12,8 +12,7 @@ import {
   FaPhone,
   FaPhoneSlash,
 } from 'react-icons/fa';
-
-let peerconnection: RTCPeerConnection;
+import { getInitials } from '@/lib/utils';
 
 /**
  * Decide whether this component is loaded in
@@ -31,11 +30,19 @@ export default function Home() {
   const rtcConnectionRef = useRef(null);
   const dataChannelRef = useRef(null);
   const hostRef = useRef(false);
-  const [offer, setOffer] = useState('');
   const [ringing, setRinging] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [mode, setMode] = useState<'OFFER' | 'ANSWER'>('OFFER');
+  const [remoteUser, setRemoteUser] = useState<{
+    id: string;
+    name: string;
+    status: string;
+  }>({
+    id: '',
+    name: 'Unknown user',
+    status: 'ACTIVE',
+  });
 
   const [peerDisconnected, setPeerDisconnected] = useState(false);
 
@@ -56,7 +63,6 @@ export default function Home() {
   };
 
   useEffect(() => {
-    peerconnection = new RTCPeerConnection();
     hostRef.current = true;
     navigator.mediaDevices
       .getUserMedia({ audio: true, video: true })
@@ -65,6 +71,17 @@ export default function Home() {
         (user2Ref.current as any).srcObject = new MediaStream();
       });
   }, []);
+
+  const getRemoteUserDetails = async (id: string) => {
+    try {
+      const response = await fetch(`/api/user?id=${id}`);
+      const user = await response.json();
+      console.log('REMOTE USER : ', user);
+      setRemoteUser(user);
+    } catch (error) {
+      console.log('Error fetching remote user details : ', error);
+    }
+  };
 
   const createPeerConnection = () => {
     // We create a RTC Peer Connection
@@ -133,10 +150,6 @@ export default function Home() {
   const initiateCall = (to: string) => {
     if (hostRef.current && (user1Ref?.current as any)?.srcObject) {
       (rtcConnectionRef.current as any) = createPeerConnection();
-      // (rtcConnectionRef.current as any).addTrack(
-      //   (user1Ref.current as any).srcObject.getTracks()[0],
-      //   (user1Ref.current as any).srcObject
-      // );
       (user1Ref.current as any).srcObject.getTracks().forEach((track: any) => {
         (rtcConnectionRef.current as any).addTrack(
           track,
@@ -156,9 +169,6 @@ export default function Home() {
         //Event that fires off when a new offer ICE candidate is created
         if (event.candidate) {
           // console.log('ice candaite : ', event.candidate);
-          // setOffer(
-          //   JSON.stringify((rtcConnectionRef.current as any).localDescription)
-          // );
           await fetch('/api/location', {
             method: 'POST',
             body: JSON.stringify({
@@ -216,12 +226,12 @@ export default function Home() {
 
     let to = searchParams.get('to');
     let from = searchParams.get('from');
-    if (to && updatedMode.toUpperCase() == 'OFFER')
+    if (to && updatedMode.toUpperCase() == 'OFFER') {
       setTimeout(() => {
-        // Generate offer
         initiateCall(to);
       }, 2000);
-    else if (from && updatedMode.toUpperCase() == 'ANSWER') {
+      getRemoteUserDetails(to).catch(console.error);
+    } else if (from && updatedMode.toUpperCase() == 'ANSWER') {
       // use this offer and create answer
       let offerStringified = localStorage.getItem('signal');
       if (!offerStringified) {
@@ -230,16 +240,20 @@ export default function Home() {
         return;
       }
       let offer = JSON.parse(offerStringified);
-      // console.log('OFFER : ', offer);
       setTimeout(() => {
         handleReceivedOffer(offer);
       }, 2000);
+      getRemoteUserDetails(offer.fromUser.id).catch(console.error);
       // I have the offer now
     }
 
     return () => {
       // close the connections
-      (rtcConnectionRef as any).current.close();
+      if (
+        (rtcConnectionRef as any).current &&
+        (rtcConnectionRef as any).current.close
+      )
+        (rtcConnectionRef as any).current.close();
     };
   }, [searchParams.get('mode'), searchParams.get('to')]);
 
@@ -262,15 +276,11 @@ export default function Home() {
 
   const handleICECandidateEvent = (e: any) => {
     if (e.candidate) {
-      // console.log('ICE candidate : ', e.candidate);
     }
   };
 
   const handleTrackEvent = (event: RTCTrackEvent) => {
-    // console.log('event track : ', event);
     event.streams[0].getTracks().forEach((track) => {
-      // console.log('TRACK : ', track);
-      // console.log(user2Ref.current as any);
       (user2Ref.current as any).srcObject.addTrack(track);
     });
   };
@@ -300,10 +310,6 @@ export default function Home() {
       (rtcConnectionRef.current as any).onicecandidate = async (event: any) => {
         //Event that fires off when a new offer ICE candidate is created
         if (event.candidate) {
-          // console.log('ice candidate : ', event.candidate);
-          // setOffer(
-          //   JSON.stringify((rtcConnectionRef.current as any).localDescription)
-          // );
           await fetch('/api/location', {
             method: 'POST',
             body: JSON.stringify({
@@ -419,15 +425,24 @@ export default function Home() {
       ></video>
       {peerSettings && peerSettings.video == false && (
         <div className="flex text-black justify-center items-center h-full w-full absolute left-0 top-0 bg-gray-700">
-          <div className="flex items-center justify-center px-4 py-4 rounded-full h-16 w-16 bg-gray-200 text-black">
+          {/* <div className="flex items-center justify-center px-4 py-4 rounded-full h-16 w-16 bg-gray-200 text-black">
             <FaVideoSlash />
-          </div>
+          </div> */}
+          <Avatar className="h-40 w-40">
+            <AvatarImage
+              src="https://github.com/shdcn.png"
+              alt="Profile Picture"
+            />
+            <AvatarFallback className=" text-black bg-gray-300 text-lg">
+              {getInitials(remoteUser.name)}
+            </AvatarFallback>
+          </Avatar>
         </div>
       )}
       {peerSettings && peerSettings.audio == false && (
         <FaMicrophoneAltSlash
-          size={70}
-          className="absolute right-8 top-40 text-white"
+          size={50}
+          className="absolute right-4 top-14 text-white"
         />
       )}
 
@@ -444,9 +459,18 @@ export default function Home() {
           //   <FaVideoSlash />
           // </div>
           <div className="flex text-black justify-center items-center h-full w-full absolute left-0 top-0 bg-gray-700">
-            <div className="flex items-center justify-center px-4 py-4 rounded-full h-16 w-16 bg-gray-200 text-black">
+            {/* <div className="flex items-center justify-center px-4 py-4 rounded-full h-16 w-16 bg-gray-200 text-black">
               <FaVideoSlash />
-            </div>
+            </div> */}
+            <Avatar className="h-20 w-20">
+              <AvatarImage
+                src="https://github.com/shdcn.png"
+                alt="Profile Picture"
+              />
+              <AvatarFallback className=" text-black bg-gray-300">
+                {getInitials(remoteUser.name)}
+              </AvatarFallback>
+            </Avatar>
           </div>
         )}
         {!isAudioEnabled && (
