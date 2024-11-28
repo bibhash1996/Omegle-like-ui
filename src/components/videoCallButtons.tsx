@@ -7,7 +7,9 @@ import {
   FaVideo,
   FaVideoSlash,
   FaMobileAlt,
+  FaPhoneSlash,
 } from 'react-icons/fa';
+import { IoIosChatbubbles } from 'react-icons/io';
 
 const VideoCallButtons = (props: {
   onMute: () => void;
@@ -15,14 +17,16 @@ const VideoCallButtons = (props: {
   onDisconnect: () => void;
   isMuted: boolean;
   isVideoEnabled: boolean;
+  onChatToggle: () => void;
 }) => {
   return (
-    <div className="flex space-x-4">
+    // <div className="flex space-x-4 bg-gray-50 h-20 p-2 rounded-lg">
+    <div className="flex space-x-4 ">
       <Button
         onClick={props.onMute}
         className={cn(
           'flex items-center justify-center px-4 py-4 rounded-full h-16 w-16',
-          'bg-gray-200 text-black'
+          'bg-gray-200 text-black hover:bg-gray-400'
         )}
       >
         {props.isMuted ? <FaMicrophoneAltSlash /> : <FaMicrophone />}
@@ -31,7 +35,7 @@ const VideoCallButtons = (props: {
         onClick={props.onVideo}
         className={cn(
           'flex items-center justify-center px-4 py-4 rounded-full h-16 w-16',
-          'bg-gray-200 text-black'
+          'bg-gray-200 text-black hover:bg-gray-400'
         )}
       >
         {props.isVideoEnabled ? <FaVideo /> : <FaVideoSlash />}
@@ -40,10 +44,19 @@ const VideoCallButtons = (props: {
         onClick={props.onDisconnect}
         className={cn(
           'flex items-center justify-center px-4 py-4 rounded-full h-16 w-16',
-          'bg-red-700 text-black'
+          'bg-red-700 text-black hover:bg-red-500'
         )}
       >
-        <FaMobileAlt />
+        <FaPhoneSlash />
+      </Button>
+      <Button
+        onClick={props.onChatToggle}
+        className={cn(
+          'flex items-center justify-center px-4 py-4 rounded-full h-16 w-16',
+          'bg-gray-200 text-black hover:bg-gray-400'
+        )}
+      >
+        <IoIosChatbubbles />
       </Button>
     </div>
   );

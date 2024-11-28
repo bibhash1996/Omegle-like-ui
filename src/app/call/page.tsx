@@ -13,6 +13,16 @@ import {
   FaPhoneSlash,
 } from 'react-icons/fa';
 import { getInitials } from '@/lib/utils';
+import Chat from '@/components/chat';
+
+interface Message {
+  fromUser: {
+    id: string;
+    name: string;
+    status: string;
+  };
+  message: string;
+}
 
 /**
  * Decide whether this component is loaded in
@@ -43,13 +53,20 @@ export default function Home() {
     name: 'Unknown user',
     status: 'ACTIVE',
   });
-
+  /**
+   * Peer related
+   */
   const [peerDisconnected, setPeerDisconnected] = useState(false);
-
   const [peerSettings, setPeerSettings] = useState<{
     audio: boolean;
     video: boolean;
   }>({ audio: true, video: true });
+
+  /**
+   * Chat related
+   */
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const servers = {
     iceServers: [
@@ -121,6 +138,9 @@ export default function Home() {
             setPeerDisconnected(true);
             // router.push('/user/home');
             break;
+          case 'MESSAGE':
+            console.log('MEssage received');
+            setMessages((prevMessage) => [...prevMessage, data.data]);
         }
       }
     };
@@ -387,6 +407,22 @@ export default function Home() {
     }
   };
 
+  const onMessageSend = (message: string) => {
+    const formattedMessage = {
+      fromUser: {
+        id: (session?.user as any)?.id || '',
+        name: (session?.user as any)?.name || '',
+        status: (session?.user as any)?.status || '',
+      },
+      message,
+    };
+    setMessages((prevMessages) => [...prevMessages, formattedMessage]);
+    sendMessageDataChannelMessage({
+      type: 'MESSAGE',
+      data: formattedMessage,
+    });
+  };
+
   const handleDisconnect = () => {
     // Logic to disconnect from the video call
     sendMessageDataChannelMessage({ type: 'DISCONNECT' });
@@ -481,14 +517,23 @@ export default function Home() {
         )}
       </div>
 
+      <Chat
+        messages={messages}
+        onOpenChange={(val) => setChatOpen(val)}
+        open={chatOpen}
+        onSend={onMessageSend}
+        currentUserId={(session?.user as any).id || ''}
+      />
+
       {/* buttons */}
-      <div className="absolute bottom-10 h-10 w-full rounded-lg flex justify-center">
+      <div className="absolute bottom-10 h-20 w-full rounded-lg flex justify-center">
         <VideoCallButtons
           onMute={toggleAudio}
           onDisconnect={handleDisconnect}
           isMuted={!isAudioEnabled}
           isVideoEnabled={isVideoEnabled}
           onVideo={toggleVideo}
+          onChatToggle={() => setChatOpen((val) => !val)}
         />
       </div>
     </div>
