@@ -3,7 +3,7 @@
 import Loading from '@/components/loading';
 import VideoCallButtons from '@/components/videoCallButtons';
 import useRTCSocket from '@/hooks/useRTCSocket';
-import { Ref, useEffect, useRef, useState } from 'react';
+import { Ref, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -14,6 +14,7 @@ import {
 } from 'react-icons/fa';
 import { getInitials } from '@/lib/utils';
 import Chat from '@/components/chat';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   fromUser: {
@@ -34,6 +35,7 @@ export default function Home() {
   const { session, status, signallingMessage } = useRTCSocket();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { toast } = useToast();
 
   const user1Ref = useRef(null);
   const user2Ref = useRef(null);
@@ -50,7 +52,7 @@ export default function Home() {
     status: string;
   }>({
     id: '',
-    name: 'Unknown user',
+    name: '',
     status: 'ACTIVE',
   });
   /**
@@ -94,7 +96,11 @@ export default function Home() {
       const response = await fetch(`/api/user?id=${id}`);
       const user = await response.json();
       console.log('REMOTE USER : ', user);
-      setRemoteUser(user);
+      setRemoteUser({
+        id: user.id,
+        name: user.name,
+        status: user.status,
+      });
     } catch (error) {
       console.log('Error fetching remote user details : ', error);
     }
@@ -422,6 +428,19 @@ export default function Home() {
       data: formattedMessage,
     });
   };
+
+  const handleReceivedMessageNotification = () => {
+    if (!chatOpen) {
+      toast({
+        title: `Ahh!! You've received a message from ${remoteUser.name}`,
+        description: `Click on the chat icon to open the chatbox`,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (messages.length) handleReceivedMessageNotification();
+  }, [messages.length]);
 
   const handleDisconnect = () => {
     // Logic to disconnect from the video call

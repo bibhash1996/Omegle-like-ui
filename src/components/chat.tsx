@@ -125,6 +125,14 @@ export default function Chat(props: {
             className=""
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (msg) {
+                  setMsg('');
+                  props.onSend(msg);
+                }
+              }
+            }}
           />
           <Button
             className="ml-4 bg-slate-500 cursor-pointer"
