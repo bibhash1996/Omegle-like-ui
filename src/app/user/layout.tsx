@@ -42,7 +42,7 @@ export default function Home(props: { children: React.ReactNode }) {
   return (
     <div>
       <nav className="flex items-center justify-between p-4 bg-white shadow-md">
-        <div className="text-xl font-bold">MyApp</div>
+        <div className="text-xl font-bold">Omegle Like</div>
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
