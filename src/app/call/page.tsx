@@ -89,13 +89,15 @@ export default function Home() {
         (user1Ref.current as any).srcObject = localStream;
         (user2Ref.current as any).srcObject = new MediaStream();
       });
+    return () => {
+      localStorage.removeItem('signal');
+    };
   }, []);
 
   const getRemoteUserDetails = async (id: string) => {
     try {
       const response = await fetch(`/api/user?id=${id}`);
       const user = await response.json();
-      console.log('REMOTE USER : ', user);
       setRemoteUser({
         id: user.id,
         name: user.name,
@@ -122,12 +124,9 @@ export default function Home() {
    * Data channel setup
    */
   const setupDataChannel = (dataChannel: RTCDataChannel) => {
-    dataChannel.onopen = () => {
-      console.log('Data channel is open');
-    };
+    dataChannel.onopen = () => {};
 
     dataChannel.onmessage = (event) => {
-      console.log('DATA CHANNEL DATA : ', JSON.stringify(event.data));
       let data = JSON.parse(event.data);
       if (data && data.type) {
         let type = data.type;
@@ -140,20 +139,24 @@ export default function Home() {
             });
             break;
           case 'DISCONNECT':
-            console.log('PEER DISCONNECTED');
             setPeerDisconnected(true);
+            toast({
+              title: 'Disconnected',
+              description: 'User disconnected from the call',
+            });
+            localStorage.removeItem('signal');
             // router.push('/user/home');
+            setTimeout(() => {
+              router.push('/user/home');
+            }, 2000);
             break;
           case 'MESSAGE':
-            console.log('MEssage received');
             setMessages((prevMessage) => [...prevMessage, data.data]);
         }
       }
     };
 
-    dataChannel.onclose = () => {
-      console.log('Data channel is closed');
-    };
+    dataChannel.onclose = () => {};
   };
 
   const createDataChannel = () => {
@@ -194,7 +197,6 @@ export default function Home() {
       (rtcConnectionRef.current as any).onicecandidate = async (event: any) => {
         //Event that fires off when a new offer ICE candidate is created
         if (event.candidate) {
-          // console.log('ice candaite : ', event.candidate);
           await fetch('/api/location', {
             method: 'POST',
             body: JSON.stringify({
@@ -261,7 +263,11 @@ export default function Home() {
       // use this offer and create answer
       let offerStringified = localStorage.getItem('signal');
       if (!offerStringified) {
-        // console.log('OFFER NOT FOUND');
+        toast({
+          title: 'Invalid Call',
+          description:
+            'Either the offer expired or user disconnected from the call',
+        });
         router.push('/user/home');
         return;
       }
@@ -445,6 +451,7 @@ export default function Home() {
   const handleDisconnect = () => {
     // Logic to disconnect from the video call
     sendMessageDataChannelMessage({ type: 'DISCONNECT' });
+    localStorage.removeItem('signal');
     console.log('Disconnected from the call');
     router.push('/user/home');
   };
