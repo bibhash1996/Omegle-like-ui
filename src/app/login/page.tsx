@@ -7,8 +7,7 @@ import { useRouter } from 'next/navigation';
 export default function Signup() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [name, setName] = useState<string>('');
-  const [location, setLocation] = useState({ lat: 0, long: 0 });
+
   const { data: session } = useSession();
 
   const router = useRouter();
@@ -20,59 +19,35 @@ export default function Signup() {
     router.push('/user/home');
   }
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLocation({ lat: latitude, long: longitude });
-        },
-        (error) => {
-          alert(error.message);
-        }
-      );
-    } else {
-      alert('Geolocation not supported by this browser');
-    }
-  }, []);
+  //   useEffect(() => {
+  //     if (navigator.geolocation) {
+  //       navigator.geolocation.getCurrentPosition(
+  //         (position) => {
+  //           console.log('Post : ', position);
+  //           const { latitude, longitude } = position.coords;
+  //           setLocation({ lat: latitude, long: longitude });
+  //         },
+  //         (error) => {
+  //           alert(error.message);
+  //         }
+  //       );
+  //     } else {
+  //       alert('Geolocation not supported by this browser');
+  //     }
+  //   }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // if (location.lat == 0) {
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        setLocation({ lat: latitude, long: longitude });
-        /**
-         * handle signup api call here
-         */
-        const response = await fetch('/api/signup', {
-          method: 'POST',
-          body: JSON.stringify({
-            /**
-             * Send answer to the offer guy
-             */
-            location: JSON.stringify({
-              lat: latitude,
-              long: longitude,
-            }),
-            name,
-            email,
-            password,
-          }),
-        });
-        const res = await response.json();
-        if (!res?.error) {
-          router.push('/login');
-          return;
-        }
-      },
-      (error) => {
-        alert(error.message);
-      }
-    );
-    // }
+    const response = await signIn('credentials', {
+      email: email,
+      password: password,
+      redirect: false,
+    });
+    if (!response?.error) {
+      router.push('/user/home');
+      return;
+    }
   };
 
   useEffect(() => {
@@ -102,27 +77,11 @@ export default function Signup() {
                 htmlFor="username"
                 className="block text-sm font-medium text-gray-700"
               >
-                Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email
+                Your Email
               </label>
               <input
                 type="email"
-                id="email"
+                id="username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -131,7 +90,7 @@ export default function Signup() {
             </div>
             <div className="mb-4">
               <label
-                htmlFor="password"
+                htmlFor="username"
                 className="block text-sm font-medium text-gray-700"
               >
                 Password
@@ -149,7 +108,7 @@ export default function Signup() {
               type="submit"
               className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition"
             >
-              Sign Up
+              Log In
             </button>
           </form>
         </div>

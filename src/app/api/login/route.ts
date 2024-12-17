@@ -7,11 +7,9 @@ export async function POST(req: NextRequest) {
     /**
      * Add api to hit backend
      */
-    const res = await fetch(`${API_SERVER_BASE_URL}/auth/signup`, {
+    const res = await fetch(`${API_SERVER_BASE_URL}/auth/login`, {
       method: 'POST',
       body: JSON.stringify({
-        name: reqBody.name,
-        location: JSON.parse(reqBody.location),
         email: reqBody.email,
         password: reqBody.password,
       }),
