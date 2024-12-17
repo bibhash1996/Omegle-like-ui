@@ -31,11 +31,11 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
         // console.log("REQ BODY IN credentials : ", req.body)
-        const res = await fetch('http://localhost:3000/api/signup', {
+        const res = await fetch('http://localhost:3000/api/login', {
           method: 'POST',
           body: JSON.stringify({
-            name: req.body.email,
-            location: req.body.location,
+            email: req.body.email,
+            password: req.body.password,
           }),
           headers: { 'Content-Type': 'application/json' },
         });
