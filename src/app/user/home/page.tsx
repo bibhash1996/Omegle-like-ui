@@ -133,12 +133,23 @@ export default function Home() {
   return (
     <div className="w-screen flex flex-row flex-wrap p-10">
       {users.map((user) => (
-        <Card className="w-[350px] mr-10 mb-10" key={user.id}>
-          <CardHeader className="flex flex-row justify-between bg-red-50">
-            <div className="flex flex-col justify-center ">
+        <Card className="w-[250px] mr-10 mb-10" key={user.id}>
+          <CardHeader className="flex flex-row justify-between bg-red-50 ">
+            <div className="flex flex-col justify-center items-center w-full">
               <CardTitle>{user.name}</CardTitle>
               <UserStatus isOnline={true} username="bibhash" />
             </div>
+            {/* <Avatar>
+              <AvatarImage
+                src="https://github.com/shdcn.png"
+                alt="Profile Picture"
+              />
+              <AvatarFallback className=" text-black bg-gray-300 ">
+                {getInitials(user.name)}
+              </AvatarFallback>
+            </Avatar> */}
+          </CardHeader>
+          <CardContent className="mt-4 flex flex-row justify-between align-top">
             <Avatar>
               <AvatarImage
                 src="https://github.com/shdcn.png"
@@ -148,13 +159,17 @@ export default function Home() {
                 {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
-          </CardHeader>
-          <CardContent className="mt-4 flex flex-row justify-between align-top">
-            <p>{user.name}</p>
+            <Avatar>
+              <AvatarImage
+                src="https://github.com/shdcn.png"
+                alt="Profile Picture"
+              />
+            </Avatar>
             <Button
               onClick={() => {
                 callUser(user);
               }}
+              className="bg-green-300 text-black"
             >
               Call
             </Button>

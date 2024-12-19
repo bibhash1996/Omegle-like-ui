@@ -10,6 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        navbar: '#ebe9e97a',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
