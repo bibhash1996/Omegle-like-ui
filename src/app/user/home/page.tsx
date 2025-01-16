@@ -65,6 +65,16 @@ export default function Home() {
   );
 
   useEffect(() => {
+    // Send heartbeat every 10 seconds
+    const interval = setInterval(() => {
+      rtcSocket.emit('heartbeat', { active: true });
+    }, 10000); // 10,000 ms = 10 seconds
+
+    // Clean up interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     if (signallingMessage && signallingMessage.type == 'offer') {
       console.log(
         'Message from backend on signal component in home : ',

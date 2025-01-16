@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Signup() {
   const [email, setEmail] = useState<string>('');
@@ -151,6 +152,14 @@ export default function Signup() {
             >
               Sign Up
             </button>
+            <div className="mt-4 text-center">
+              <p className="space-y-2">
+                Have an account?{' '}
+                <Link href={'/login'} className="text-blue-400 underline">
+                  Login
+                </Link>
+              </p>
+            </div>
           </form>
         </div>
       </div>
