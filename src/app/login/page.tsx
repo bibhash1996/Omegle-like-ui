@@ -72,7 +72,7 @@ export default function Signup() {
             onSubmit={handleSubmit}
             className="bg-white p-6 rounded shadow-md w-80"
           >
-            <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
+            <h2 className="text-2xl font-bold mb-4">Log In</h2>
             <div className="mb-4">
               <label
                 htmlFor="username"

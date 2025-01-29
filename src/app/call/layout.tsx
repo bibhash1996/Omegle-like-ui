@@ -19,9 +19,9 @@ export default function Home(props: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen ">
       <NavigationPanel />
-      <div className="body flex-grow bg-black">{props.children}</div>
+      <div className="flex-1  bg-black">{props.children}</div>
     </div>
   );
 }

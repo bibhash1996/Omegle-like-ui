@@ -16,7 +16,7 @@ const useRTCSocket = () => {
    */
   let rtcSocket: Socket = useMemo(
     () =>
-      io(`${API_SERVER_BASE_URL}/rtc`, {
+      io(`${process.env.NEXT_PUBLIC_BASE_URL}/rtc`, {
         transports: ['polling', 'websocket'],
         withCredentials: true,
         extraHeaders: {
@@ -36,8 +36,7 @@ const useRTCSocket = () => {
   useEffect(() => {
     if (typeof window == 'undefined') return;
     if (status == 'loading' || status == 'unauthenticated') return;
-
-    rtcSocket = io(`${API_SERVER_BASE_URL}/rtc`, {
+    rtcSocket = io(`${process.env.NEXT_PUBLIC_BASE_URL}/rtc`, {
       transports: ['polling', 'websocket'],
       withCredentials: true,
       extraHeaders: {

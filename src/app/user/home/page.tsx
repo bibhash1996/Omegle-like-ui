@@ -60,9 +60,7 @@ export default function Home() {
     offer: null,
     fromUser: null,
   });
-  const [play, { pause, stop }] = useSound(
-    'http://localhost:3000/sounds/call-ring.mp3'
-  );
+  const [play, { pause, stop }] = useSound('/sounds/call-ring.mp3');
 
   useEffect(() => {
     // Send heartbeat every 10 seconds

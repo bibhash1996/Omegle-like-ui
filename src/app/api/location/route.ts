@@ -20,7 +20,7 @@ export async function GET() {
     /**
      * Add api to hit backend
      */
-    const res = await fetch(`${API_SERVER_BASE_URL}/user/near`, {
+    const res = await fetch(`${API_SERVER_BASE_URL}/protected/user/near`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     /**
      * Add api to hit backend
      */
-    const res = await fetch(`${API_SERVER_BASE_URL}/user/signal`, {
+    const res = await fetch(`${API_SERVER_BASE_URL}/protected/user/signal`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

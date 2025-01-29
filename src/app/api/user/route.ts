@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     /**
      * Add api to hit backend
      */
-    const res = await fetch(`${API_SERVER_BASE_URL}/user/${id}`, {
+    const res = await fetch(`${API_SERVER_BASE_URL}/protected/user/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

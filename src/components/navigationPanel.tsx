@@ -176,6 +176,7 @@ export default function NavigationPanel() {
   const logout = async () => {
     await signOut({
       redirect: true,
+      callbackUrl: '/login',
     });
   };
 

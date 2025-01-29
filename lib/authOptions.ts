@@ -31,18 +31,33 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
         // console.log("REQ BODY IN credentials : ", req.body)
-        const res = await fetch('http://localhost:3000/api/login', {
-          method: 'POST',
-          body: JSON.stringify({
-            email: req.body.email,
-            password: req.body.password,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const user = await res.json();
+        // const res = await fetch('http://localhost:3001/api/login', {
+        // const res = await fetch('http://localhost:3001/api/login', {
+        //   method: 'POST',
+        //   body: JSON.stringify({
+        //     email: req.body.email,
+        //     password: req.body.password,
+        //   }),
+        //   headers: { 'Content-Type': 'application/json' },
+        // });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/public/auth/login`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              email: req.body.email,
+              password: req.body.password,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        const data = await res.json();
+
         // If no error and we have user data, return it
-        if (res.ok && user) {
-          return user;
+        if (res.ok && data.data) {
+          return data.data;
         }
         // Return null if user data could not be retrieved
         return null;

@@ -461,7 +461,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-700 relative">
+    <div className="h-full bg-gray-700">
       {ringing ? (
         <div className="flex text-black justify-center items-center h-full w-full absolute left-0 top-0">
           <div className="flex items-center justify-center px-4 py-4 rounded-full h-16 w-16 bg-gray-200 text-black">
@@ -508,7 +508,7 @@ export default function Home() {
         />
       )}
 
-      <div className="absolute bottom-8 right-8 h-60 w-60 rounded-lg border-white border-2">
+      <div className="fixed bottom-10 right-10 h-60 w-60 rounded-lg border-white border-2">
         <video
           id="user-1"
           ref={user1Ref}
@@ -552,7 +552,7 @@ export default function Home() {
       />
 
       {/* buttons */}
-      <div className="absolute bottom-10 h-20 w-full rounded-lg flex justify-center">
+      <div className="fixed bottom-10 h-20 w-full rounded-lg flex justify-center">
         <VideoCallButtons
           onMute={toggleAudio}
           onDisconnect={handleDisconnect}
