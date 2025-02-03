@@ -20,7 +20,7 @@ export default function Home(props: { children: React.ReactNode }) {
 
   return (
     <div>
-      <NavigationPanel />
+      <NavigationPanel id={(session.user as any).id} />
       <div className="body">{props.children}</div>
     </div>
   );

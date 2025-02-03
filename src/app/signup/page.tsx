@@ -18,7 +18,7 @@ export default function Signup() {
     /**
      * If session is already present
      */
-    router.push('/user/home');
+    router.push(`/user/${(session?.user as any).id}/home`);
   }
 
   useEffect(() => {

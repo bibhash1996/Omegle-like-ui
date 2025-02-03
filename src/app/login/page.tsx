@@ -17,7 +17,7 @@ export default function Signup() {
     /**
      * If session is already present
      */
-    router.push('/user/home');
+    router.push(`/user/${(session?.user as any).id}/home`);
   }
 
   //   useEffect(() => {
@@ -46,7 +46,7 @@ export default function Signup() {
       redirect: false,
     });
     if (!response?.error) {
-      router.push('/user/home');
+      router.push(`/user/${(session?.user as any).id}/home`);
       return;
     }
   };

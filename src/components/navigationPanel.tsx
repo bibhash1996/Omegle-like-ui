@@ -163,7 +163,7 @@ ListItem.displayName = 'ListItem';
  *
  */
 
-export default function NavigationPanel() {
+export default function NavigationPanel(props: { id: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
@@ -188,37 +188,11 @@ export default function NavigationPanel() {
       <div
         className="text-xl font-bold cursor-pointer"
         onClick={() => {
-          router.push('/user/home');
+          router.push(`/`);
         }}
       >
         OMEGLE LIKE
       </div>
-      {/* <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>Option 1</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <NavigationMenuLink>Link</NavigationMenuLink>
-            </NavigationMenuContent>
-           
-          </NavigationMenuItem>
-
-          <NavigationMenuItem>
-            <Link href="/docs" legacyBehavior passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Option 2
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link href="/docs" legacyBehavior passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Option 3
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu> */}
       <NavigationMenuPanel />
 
       {/* Profile Section */}
@@ -243,7 +217,7 @@ export default function NavigationPanel() {
           <PopoverContent className="w-60">
             <ul className="py-1">
               <a
-                href="/user/profile"
+                href={`/user/${props.id}/profile`}
                 className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
               >
                 Profile

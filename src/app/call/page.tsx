@@ -145,9 +145,8 @@ export default function Home() {
               description: 'User disconnected from the call',
             });
             localStorage.removeItem('signal');
-            // router.push('/user/home');
             setTimeout(() => {
-              router.push('/user/home');
+              router.push(`/user/${(session?.user as any).id}/home`);
             }, 2000);
             break;
           case 'MESSAGE':
@@ -268,7 +267,7 @@ export default function Home() {
           description:
             'Either the offer expired or user disconnected from the call',
         });
-        router.push('/user/home');
+        router.push(`/user/${(session?.user as any).id}/home`);
         return;
       }
       let offer = JSON.parse(offerStringified);
@@ -453,7 +452,7 @@ export default function Home() {
     sendMessageDataChannelMessage({ type: 'DISCONNECT' });
     localStorage.removeItem('signal');
     console.log('Disconnected from the call');
-    router.push('/user/home');
+    router.push(`/user/${(session?.user as any).id}/home`);
   };
 
   if (status === 'loading') {
