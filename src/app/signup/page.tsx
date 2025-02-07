@@ -77,7 +77,7 @@ export default function Signup() {
   };
 
   useEffect(() => {
-    document.title = 'Omegle Like | Sign In';
+    document.title = 'Proximeet | Sign In';
   }, []);
 
   return (

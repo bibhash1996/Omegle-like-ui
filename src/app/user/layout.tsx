@@ -19,9 +19,11 @@ export default function Home(props: { children: React.ReactNode }) {
   }
 
   return (
-    <div>
+    <section className="h-screen flex flex-col">
       <NavigationPanel id={(session.user as any).id} />
-      <div className="body">{props.children}</div>
-    </div>
+      <div className="flex-1 bg-gray-300 flex items-center justify-center">
+        {props.children}
+      </div>
+    </section>
   );
 }

@@ -10,16 +10,17 @@ import {
 } from '@/components/ui/navigation-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import React, { useState } from 'react';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import Image from 'next/image';
 import ConferenceCall from '../../public/images/conference_call.svg';
+import Logo from '../../public/images/logo-name-side.png';
 
 /***
  *
@@ -43,7 +44,7 @@ const components: { title: string; href: string; description: string }[] = [
     title: 'Progress',
     href: '/docs/primitives/progress',
     description:
-      'What makes us stand out among Omegle-like video chat platforms?',
+      'What makes us stand out among Proximeet video chat platforms?',
   },
   {
     title: 'Social',
@@ -103,7 +104,7 @@ export function NavigationMenuPanel() {
                 href="/docs/primitives/typography"
                 title="Social Network"
               >
-                Use Omegle-like to talk to strangers, make friends, and stay in
+                Use Proximeet to talk to strangers, make friends, and stay in
                 touch on our platform's social network.
               </ListItem>
             </ul>
@@ -166,6 +167,7 @@ ListItem.displayName = 'ListItem';
 export default function NavigationPanel(props: { id: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
   const toggleMenu = (e: any) => {
     e.stopPropagation();
@@ -182,7 +184,7 @@ export default function NavigationPanel(props: { id: string }) {
 
   return (
     <nav
-      className="flex items-center justify-between p-4 bg-navbar shadow-lg"
+      className="flex h-30 items-center justify-between p-4 bg-navbar shadow-lg"
       onClick={() => setIsOpen(false)}
     >
       <div
@@ -191,7 +193,7 @@ export default function NavigationPanel(props: { id: string }) {
           router.push(`/`);
         }}
       >
-        OMEGLE LIKE
+        <Image src={Logo} alt="Follow us on Twitter" width={100} height={30} />
       </div>
       <NavigationMenuPanel />
 
@@ -207,10 +209,15 @@ export default function NavigationPanel(props: { id: string }) {
             <button onClick={toggleMenu} className="relative">
               <Avatar>
                 <AvatarImage
-                  src="https://github.com/shadcn.png"
-                  alt="Profile Picture"
+                  src={
+                    (session?.user as any).photo ||
+                    'https://github.com/shadcn.png'
+                  }
+                  alt={(session?.user as any).name || 'Profile Picture'}
                 />
-                <AvatarFallback>CN</AvatarFallback>
+                <AvatarFallback>
+                  {getInitials((session?.user as any).name || 'BS')}
+                </AvatarFallback>
               </Avatar>
             </button>
           </PopoverTrigger>

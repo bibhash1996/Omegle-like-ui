@@ -139,7 +139,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="w-screen flex flex-row flex-wrap p-10">
+    <div className="w-screen flex flex-row flex-wrap p-10 bg-gray-300">
       {users.map((user) => (
         <Card className="w-[250px] mr-10 mb-10" key={user.id}>
           <CardHeader className="flex flex-row justify-between bg-red-50 ">

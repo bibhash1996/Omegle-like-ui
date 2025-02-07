@@ -3,10 +3,13 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getUserProfile } from '@/app/actions/user';
+import { getUserProfile, saveUserProfile } from '@/app/actions/user';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 function Profile() {
   const { id } = useParams();
+  const [mode, setMode] = useState<'VIEW' | 'EDIT'>('VIEW');
   const [user, setUser] = useState<{
     id: string;
     name: string;
@@ -15,19 +18,30 @@ function Profile() {
     designation: string;
     bio: string;
   } | null>(null);
+  const [loadedUser, setLoadedUser] = useState(null);
+  const [changed, setChanged] = useState(false);
 
   useEffect(() => {
     getUserProfile(id as string).then(async (data) => {
       setUser(data.data);
+      setLoadedUser(data.data);
     });
   }, [id]);
 
+  const saveChanges = async () => {
+    if (user) {
+      const response = await saveUserProfile(user);
+      console.log('REsponse : ', response);
+    }
+    setMode('VIEW');
+  };
+
   return (
-    <div className="p-4">
+    <>
       {user == null ? (
         <p>Loading ...</p>
       ) : (
-        <div className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="h-full overflow-y-auto rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="relative  h-25 md:h-65">
             <Image
               src={'/images/cover-01.png'}
@@ -36,8 +50,36 @@ function Profile() {
               width={970}
               height={260}
             />
-            <div className="absolute bottom-[-20] right-2">
-              <p>bibhash singh</p>
+            <div className="absolute bottom-[-20] right-2  z-50">
+              {/* <CiEdit className="text-2xl mt-4 mr-4 h-full" /> */}
+              <Button
+                className="mt-4 mr-4 h-full"
+                variant={mode == 'EDIT' ? 'default' : 'outline'}
+                onClick={async () => {
+                  if (mode == 'EDIT') {
+                    await saveChanges();
+                  } else {
+                    setMode('EDIT');
+                  }
+                }}
+              >
+                {mode == 'EDIT' ? 'Save Changes' : 'Edit'}
+              </Button>
+              {mode == 'EDIT' && (
+                <Button
+                  className="mt-4 mr-4 h-full"
+                  variant={'destructive'}
+                  onClick={() => {
+                    setMode('VIEW');
+                    if (changed) {
+                      setChanged(false);
+                      setUser(loadedUser);
+                    }
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
             </div>
           </div>
           <div className="px-4 pb-6 text-center lg:pb-8 xl:pb-11.5 relative">
@@ -86,11 +128,53 @@ function Profile() {
             </div>
             <div className="mt-4 ">
               <h3 className="mb-1.5 text-2xl font-semibold text-black dark:text-white">
-                {user.name}
+                {/* {user.name} */}
+                <input
+                  type="text"
+                  placeholder={user.name || 'Enter your name'}
+                  className={cn(
+                    'text-xl outline-0 p-1 rounded-sm text-center w-full',
+                    mode == 'EDIT'
+                      ? 'border border-gray-100 min-w-20'
+                      : 'bg-transparent'
+                  )}
+                  value={user.name}
+                  onChange={(e) => {
+                    setChanged(true);
+                    setUser({
+                      ...user,
+                      name: e.target.value || '',
+                    });
+                  }}
+                  disabled={mode == 'VIEW'}
+                />
               </h3>
-              <p className="font-medium">
-                {user.designation || 'Enter your designation'}
-              </p>
+
+              {/* {user.designation || 'Enter your designation'} */}
+              <input
+                type="text"
+                placeholder={
+                  user.designation || mode == 'EDIT'
+                    ? 'Enter your designation'
+                    : '...'
+                }
+                className={cn(
+                  'text-sm outline-0 p-1 rounded-sm text-center w-full mt-3',
+                  mode == 'EDIT'
+                    ? 'border border-gray-100  min-w-20'
+                    : 'bg-transparent'
+                )}
+                value={user.designation}
+                onChange={(e) => {
+                  setChanged(true);
+                  setUser({
+                    ...user,
+                    designation: e.target.value || '',
+                  });
+                }}
+                disabled={mode == 'VIEW'}
+              />
+
               <div className="mx-auto mb-5.5 mt-6 grid max-w-94 grid-cols-3 rounded-md border border-stroke py-2.5 shadow-1 dark:border-strokedark dark:bg-[#37404F]">
                 <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 dark:border-strokedark xsm:flex-row">
                   <span className="font-semibold text-black dark:text-white">
@@ -116,13 +200,36 @@ function Profile() {
                 <h4 className="font-semibold text-black dark:text-white">
                   About Me
                 </h4>
-                <p className="mt-4.5">{user.bio || 'Enter your description'}</p>
+                {/* <p className="mt-4.5">{user.bio || 'Enter your description'}</p> */}
+                <textarea
+                  // type="text"
+                  placeholder={
+                    user.bio || mode == 'EDIT'
+                      ? 'Enter your description'
+                      : '...'
+                  }
+                  className={cn(
+                    'font-normal  text-lg outline-0 p-1 rounded-sm text-center w-full',
+                    mode == 'EDIT'
+                      ? 'border border-gray-100 w-full'
+                      : 'bg-transparent resize-none'
+                  )}
+                  value={user.bio}
+                  onChange={(e) => {
+                    setChanged(true);
+                    setUser({
+                      ...user,
+                      bio: e.target.value || '',
+                    });
+                  }}
+                  disabled={mode == 'VIEW'}
+                />
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

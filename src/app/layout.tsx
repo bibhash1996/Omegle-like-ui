@@ -16,8 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'Omegle Like',
-  description: 'Omegle Like',
+  title: 'Proximeet',
+  description: 'Proximeet',
 };
 
 export default function RootLayout({
