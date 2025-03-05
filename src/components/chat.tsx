@@ -75,14 +75,14 @@ export default function Chat(props: {
     )
       return;
     setTimeout(() => {
-      // if (chatSection.current) {
-      (chatSection.current as any).scrollIntoView({ behavior: 'smooth' });
-      // }
+      if (chatSection.current) {
+        (chatSection.current as any).scrollIntoView({ behavior: 'smooth' });
+      }
     }, 500);
   }, [chatSection.current]);
 
   useEffect(() => {
-    if (chatSection.current) {
+    if (chatSection.current && (chatSection.current as any).scrollIntoView) {
       (chatSection.current as any).scrollIntoView({ behavior: 'smooth' });
     }
   }, [props.messages, chatSection.current]);
