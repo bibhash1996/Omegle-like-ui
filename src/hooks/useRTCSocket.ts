@@ -30,7 +30,7 @@ const useRTCSocket = () => {
           },
         },
       }),
-    [status]
+    []
   );
 
   useEffect(() => {
@@ -60,7 +60,7 @@ const useRTCSocket = () => {
     });
 
     rtcSocket.on('signal', (message) => {
-      console.log('Message from backend on signal channel main : ', message);
+      // console.log('Message from backend on signal channel main : ', message);
       setSignallingMessage(message);
     });
 
@@ -76,7 +76,7 @@ const useRTCSocket = () => {
       rtcSocket.off();
       rtcSocket.disconnect();
     };
-  }, [status]);
+  }, []);
 
   return { rtcSocket, session, status, signallingMessage };
 };

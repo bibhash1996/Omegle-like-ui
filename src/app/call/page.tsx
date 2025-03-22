@@ -25,6 +25,8 @@ interface Message {
   message: string;
 }
 
+let pendingCandidates: any[] = [];
+
 /**
  * Decide whether this component is loaded in
  * offer mode or answer mode
@@ -82,17 +84,16 @@ export default function Home() {
   };
 
   useEffect(() => {
-    hostRef.current = true;
-    navigator.mediaDevices
-      .getUserMedia({ audio: true, video: true })
-      .then((localStream) => {
-        (user1Ref.current as any).srcObject = localStream;
-        (user2Ref.current as any).srcObject = new MediaStream();
-      });
-    return () => {
-      localStorage.removeItem('signal');
-    };
-  }, []);
+    if (user1Ref.current && user2Ref.current) {
+      hostRef.current = true;
+      navigator.mediaDevices
+        .getUserMedia({ audio: true, video: true })
+        .then((localStream) => {
+          (user1Ref.current as any).srcObject = localStream;
+          (user2Ref.current as any).srcObject = new MediaStream();
+        });
+    }
+  }, [user1Ref.current, user2Ref.current]);
 
   const getRemoteUserDetails = async (id: string) => {
     try {
@@ -292,6 +293,7 @@ export default function Home() {
     /**
      * Handle receive answers only
      */
+    console.log('Signalling message in CALLLL :', signallingMessage);
     if (signallingMessage && signallingMessage.type == 'answer') {
       setRinging(false);
       (rtcConnectionRef as any).current
@@ -299,9 +301,13 @@ export default function Home() {
         .catch((err: any) => console.log(err));
     } else if (signallingMessage && signallingMessage.type == 'ice-candidate') {
       const candidate = new RTCIceCandidate(signallingMessage.data);
-      (rtcConnectionRef as any).current
-        .addIceCandidate(candidate)
-        .catch((e: any) => console.log(e));
+      if ((rtcConnectionRef as any).current) {
+        (rtcConnectionRef as any).current
+          .addIceCandidate(candidate)
+          .catch((e: any) => console.log(e));
+      } else {
+        pendingCandidates.push(candidate);
+      }
     }
   }, [signallingMessage]);
 
@@ -357,7 +363,11 @@ export default function Home() {
         }
       };
 
-      (rtcConnectionRef as any).current.setRemoteDescription(offer);
+      await (rtcConnectionRef as any).current.setRemoteDescription(offer);
+      pendingCandidates.forEach((candidate) =>
+        (rtcConnectionRef as any).current.addIceCandidate(candidate)
+      );
+      pendingCandidates = []; // Clear the queue
 
       (rtcConnectionRef as any).current
         .createAnswer()

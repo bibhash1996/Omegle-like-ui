@@ -73,6 +73,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    console.log(
+      'Signalling message in home channel received',
+      signallingMessage
+    );
+
     if (signallingMessage && signallingMessage.type == 'offer') {
       console.log(
         'Message from backend on signal component in home : ',
@@ -89,6 +94,14 @@ export default function Home() {
         offer: offer,
         fromUser,
       });
+      localStorage.setItem(
+        'signal',
+        JSON.stringify({
+          ...offer.offer,
+          fromUser: offer.fromUser,
+        })
+      );
+      console.log('SETTING OFFER');
     }
     return () => {};
   }, [signallingMessage]);
