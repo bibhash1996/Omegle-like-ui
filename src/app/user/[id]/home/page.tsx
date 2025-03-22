@@ -64,21 +64,21 @@ export default function Home() {
 
   useEffect(() => {
     // Send heartbeat every 10 seconds
-    const interval = setInterval(() => {
-      rtcSocket.emit('heartbeat', { active: true });
-    }, 10000); // 10,000 ms = 10 seconds
-
+    if (rtcSocket) {
+      const interval = setInterval(() => {
+        rtcSocket.emit('heartbeat', { active: true });
+      }, 10000); // 10,000 ms = 10 seconds
+    }
     // Clean up interval on component unmount
-    return () => clearInterval(interval);
-  }, []);
+    // return () => clearInterval(interval);
+  }, [rtcSocket]);
 
   useEffect(() => {
-    console.log(
-      'Signalling message in home channel received',
-      signallingMessage
-    );
-
     if (signallingMessage && signallingMessage.type == 'offer') {
+      console.log(
+        'Signalling message in home channel received',
+        signallingMessage
+      );
       console.log(
         'Message from backend on signal component in home : ',
         signallingMessage

@@ -10,33 +10,34 @@ const useRTCSocket = () => {
   const [signallingMessage, setSignallingMessage] = useState<{
     [key: string]: any;
   } | null>(null);
+  const [rtcSocket, setRtcSocket] = useState<Socket | null>(null);
 
   /**
    * Fix this here
    */
-  let rtcSocket: Socket = useMemo(
-    () =>
-      io(`${process.env.NEXT_PUBLIC_BASE_URL}/rtc`, {
-        transports: ['polling', 'websocket'],
-        withCredentials: true,
-        extraHeaders: {
-          Authorization: `Bearer ${(session as any)?.accessToken}`,
-        },
-        transportOptions: {
-          polling: {
-            extraHeaders: {
-              Authorization: `Bearer ${(session as any)?.accessToken}`,
-            },
-          },
-        },
-      }),
-    []
-  );
+  // let rtcSocket: Socket = useMemo(
+  //   () =>
+  //     io(`${process.env.NEXT_PUBLIC_BASE_URL}/rtc`, {
+  //       transports: ['polling', 'websocket'],
+  //       withCredentials: true,
+  //       extraHeaders: {
+  //         Authorization: `Bearer ${(session as any)?.accessToken}`,
+  //       },
+  //       transportOptions: {
+  //         polling: {
+  //           extraHeaders: {
+  //             Authorization: `Bearer ${(session as any)?.accessToken}`,
+  //           },
+  //         },
+  //       },
+  //     }),
+  //   []
+  // );
 
   useEffect(() => {
     if (typeof window == 'undefined') return;
     if (status == 'loading' || status == 'unauthenticated') return;
-    rtcSocket = io(`${process.env.NEXT_PUBLIC_BASE_URL}/rtc`, {
+    let rtcSocket = io(`${process.env.NEXT_PUBLIC_BASE_URL}/rtc`, {
       transports: ['polling', 'websocket'],
       withCredentials: true,
       extraHeaders: {
@@ -71,6 +72,8 @@ const useRTCSocket = () => {
     rtcSocket.on('connect_error', (err) => {
       console.error(`Connection error due to ${err.message}`);
     });
+
+    setRtcSocket(rtcSocket);
 
     return () => {
       rtcSocket.off();
