@@ -508,7 +508,7 @@ export default function Home() {
         ref={user2Ref}
         playsInline
         autoPlay
-        className="h-full object-cover"
+        className="h-full object-cover w-full"
       ></video>
       {peerSettings && peerSettings.video == false && (
         <div className="flex text-black justify-center items-center h-full w-full absolute left-0 top-0 bg-gray-700">
