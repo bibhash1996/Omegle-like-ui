@@ -300,10 +300,11 @@ export default function Home() {
     console.log('Signalling message in CALLLL :', signallingMessage);
     if (signallingMessage && signallingMessage.type == 'answer') {
       setRinging(false);
-      answeredReceived = true;
+
       (rtcConnectionRef as any).current
         .setRemoteDescription(signallingMessage)
         .then(() => {
+          answeredReceived = true;
           pendingCandidates.forEach((candidate) =>
             (rtcConnectionRef as any).current.addIceCandidate(candidate)
           );
