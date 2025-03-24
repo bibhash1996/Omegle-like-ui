@@ -254,7 +254,7 @@ export default function Home() {
   useEffect(() => {
     let updatedMode: 'OFFER' | 'ANSWER' =
       (searchParams.get('mode') as any) || 'OFFER';
-    setMode(updatedMode);
+    setMode((updatedMode as any).toUpperCase());
 
     let to = searchParams.get('to');
     let from = searchParams.get('from');
@@ -316,10 +316,11 @@ export default function Home() {
       if ((rtcConnectionRef as any).current) {
         if (mode == 'OFFER' && answeredReceived == false) {
           pendingCandidates.push(candidate);
-        } else
+        } else {
           (rtcConnectionRef as any).current
             .addIceCandidate(candidate)
             .catch((e: any) => console.log(e));
+        }
       } else {
         pendingCandidates.push(candidate);
       }
