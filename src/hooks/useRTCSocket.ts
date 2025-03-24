@@ -61,7 +61,7 @@ const useRTCSocket = () => {
     });
 
     rtcSocket.on('signal', (message) => {
-      // console.log('Message from backend on signal channel main : ', message);
+      console.log('Message from backend on signal channel main : ', message);
       setSignallingMessage(message);
     });
 
