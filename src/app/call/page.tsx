@@ -26,6 +26,7 @@ interface Message {
 }
 
 let pendingCandidates: any[] = [];
+let answeredReceived = false;
 
 /**
  * Decide whether this component is loaded in
@@ -82,6 +83,9 @@ export default function Home() {
       },
     ],
   };
+  useEffect(() => {
+    answeredReceived = false;
+  }, []);
 
   useEffect(() => {
     if (user1Ref.current && user2Ref.current) {
@@ -296,15 +300,25 @@ export default function Home() {
     console.log('Signalling message in CALLLL :', signallingMessage);
     if (signallingMessage && signallingMessage.type == 'answer') {
       setRinging(false);
+      answeredReceived = true;
       (rtcConnectionRef as any).current
         .setRemoteDescription(signallingMessage)
+        .then(() => {
+          pendingCandidates.forEach((candidate) =>
+            (rtcConnectionRef as any).current.addIceCandidate(candidate)
+          );
+          pendingCandidates = [];
+        })
         .catch((err: any) => console.log(err));
     } else if (signallingMessage && signallingMessage.type == 'ice-candidate') {
       const candidate = new RTCIceCandidate(signallingMessage.data);
       if ((rtcConnectionRef as any).current) {
-        (rtcConnectionRef as any).current
-          .addIceCandidate(candidate)
-          .catch((e: any) => console.log(e));
+        if (mode == 'OFFER' && answeredReceived == false) {
+          pendingCandidates.push(candidate);
+        } else
+          (rtcConnectionRef as any).current
+            .addIceCandidate(candidate)
+            .catch((e: any) => console.log(e));
       } else {
         pendingCandidates.push(candidate);
       }
